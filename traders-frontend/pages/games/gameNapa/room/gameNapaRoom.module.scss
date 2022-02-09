@@ -1,0 +1,43 @@
+.container {
+  background-color: #060D2D;
+  min-height: 100vh;
+  width: 100%;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 2em;
+}
+
+.info-container {
+  display: grid;
+  // grid-template-columns: 1fr 1fr; can go back if we want the charts again
+  grid-template-columns: 1fr;
+  width: 100%;
+  padding: 0 100px;
+}
+
+.hist-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hist-table-container {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 5em;
+}
+
+.chart-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  div {
+    width: 100%;
+  }
+}

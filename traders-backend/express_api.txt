@@ -1,0 +1,222 @@
+GET /user/
+- return user data
+- Input: {}
+- Output: {name: string, email: string}, {error: string}
+
+GET /user/login
+- logs a user in
+- Output: redirect to auth0 login page
+
+GET /user/callback
+- called after user signs in
+- Output: accessToken: string
+
+GET /user/logout
+
+POST /user/admin
+- make a user an admin
+- Input: {adminPasscode: string}
+- Output: {success: string}, {error: string}
+
+GET /user/isAdmin
+- check if a user is an admin
+- Input: {}
+- Output: {success: string, isAdmin: true}, {error: string, isAdmin: false}
+
+---------------------------------------------------------------
+
+Socket.io: 
+
+socket.on("createGame")
+- creates a game
+- admin only
+- Input: {
+		num_players: int, 
+		min_spread: int,
+		max_spread: int,
+		card_range_low: int,
+		card_range_high: int
+		gameRoomId: string
+	}
+- Response.data: 'Game created'
+- Error: "Game already created with game_id:____"
+
+socket.on("joinGame")
+- add a user to a game
+- Input: {
+		gameRoomId: string,
+	}
+- Response.data: { 
+	"num_players": game.get_num_players(),
+    "card_range_low": game.card_range_low,
+    "card_range_high": game.card_range_high,
+    "min_spread": game.min_spread,
+    "max_spread": game.max_spread},
+	"players": [user1, user2, user3...]
+	"current_player"?:<username>
+	"playerCard"? : val,
+	"revealedCards"?: [<vals>],
+	"spread"?: {"ask": {"price": 10, "volume": 5}, "bid": {"price": 1, "volume": 5}}, 
+	"recentTransactions"?: array of json, 
+	"deadline"?: number (use Date.now() to deal with it)
+	}
+- Error: 'Game does not exist with game_id:___', "You are already in this game", "Exceeds max users"
+
+---------------------------------------------------------------
+
+socket.on("actions")
+params.route: makeMarket 
+- allows player to make a market
+- Input: {
+		bid: int,
+		bid_lots: int,
+		ask: int, 
+		ask_lots: int
+	}
+- receive the following example output:
+- response.data: {
+	"current_player": "c", 
+	"spread": {"ask": {"price": 10, "volume": 5}, "bid": {"price": 1, "volume": 5}}, 
+	recentTransactions: list of all transactions []
+	positions: {<username>: <value>}
+	revealedCards: [<vals>], 
+	"deadline"?: number (use Date.now() to deal with it)}
+
+params.route: transact
+- allows player to buy or sell 
+- Input: {
+		position: ['BUY', 'SELL'],
+		quantity: int
+	}
+- response.data: {
+	"current_player": "c", 
+	"spread": {"ask": {"price": 10, "volume": 5}, "bid": {"price": 1, "volume": 5}}, 
+	positions: {<username>: <value>}}
+	recentTransactions: list of all transactions []
+	positions: {<username>: <value>}, 
+	revealedCards: [<vals>]
+	 }
+
+params.route: drop
+- remove a player from a game, could be done by the player or an admin
+- Input(normal user): {}
+- Input(admin): {username: string}
+- Output: {data: string}, {error: string}
+- if the game is in progress, receive the following example output:
+- response.data: {
+	"current_player": "c", 
+	"spread": {"ask": {"price": 10, "volume": 5}, "bid": {"price": 1, "volume": 5}}, 
+	positions: {<username>: <value>}}
+
+params.route: penalty
+- penalizes the players
+- Input: {}
+- response.data: {
+	"current_player": "c", 
+	"spread": {"ask": {"price": 10, "volume": 5}, "bid": {"price": 1, "volume": 5}}, 
+	positions: {<username>: <value>}, 
+	"deadline"?: number (use Date.now() to deal with it)}
+
+params.route: undo
+- undo last action
+- Input: {}
+- response.data: {
+	"current_player": "c", 
+	"spread": {"ask": {"price": 10, "volume": 5}, "bid": {"price": 1, "volume": 5}}, 
+	positions: {<username>: <value>}}
+
+params.route: endGame
+- ends the game
+- admin only
+- Input: {gameRoomId: string}
+- Outputs the game logs in a JSON object {logs: [JSON],truePnl: {<username>:<value>}, trueSum:val}
+
+params.route: playerPositions
+- Gets all players' positions
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Response.data: { [username]: [value] }}
+
+params.route: revealedCards
+- Gets the revealed_cards
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Response.data: [card1, card2...]
+
+params.route: truePnl
+- get the true pnl of all players
+- admin only
+- Input(admin): {gameRoomId: string}
+- Response.data: {<username>:<value>}
+
+params.route: turnList
+- ignore
+- gets the turn list of the game
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Output: {data: array}, {error: string} 
+
+params.route: spread
+- gets the spread of the game
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Response.data: { 
+		ask: { price: int, volume: int }, 
+		bid: { price: int, volume: int }
+	}
+
+params.route: range
+- gets the card range as specified during the creation of the game
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Response.data: { 
+		low: int,
+		high: int
+	}
+
+params.route: players 
+- ignore
+- return a list of all the players in the game
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Output: {data: []}, {error: string}
+
+params.route: currentPlayer
+- return the username of the current player
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Response.data: <username>
+
+params.route: cardRange
+- gets the card range as specified during the creation of the game
+- Input(normal user): {}
+- Input(admin): {gameRoomId: string}
+- Response.data: [<low>, <high>]
+
+params.route: playerCard
+- show what card each player has
+- admin only
+- Input(admin): {gameRoomId: string}
+- Response.data: {<username>: <value>}
+
+params.route: myCard
+- show what card I personally have
+- open to everyone
+- Input(): {gameRoomId: string, username}
+- Response.data: {"card": <value as an int>}
+
+params.route: trueSum
+- show the true sum of the game
+- admin only
+- Input(admin): {gameRoomId: string}
+- Output: {data: int}, {error: string}
+
+params.route: startGame
+- starts the game
+- admin only
+- Input: {gameRoomId: string}
+- Response.data: {
+	playerCard: val, 
+	current_player: <username>, 
+	"deadline"?: number (use Date.now() to deal with it)
+	}

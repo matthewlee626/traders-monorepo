@@ -1,0 +1,13 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 1px solid #DFDFDF;
+  border-radius: 0.25em;
+  padding: 0 2em;
+  .button {
+    padding-left: 4em;
+  }
+}
